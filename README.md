@@ -1,4 +1,3 @@
-# Telegram-bot-for-technical-support
 # Telegram Bot for Technical Support - "We Sell Everything!"
 
 This bot automates technical support for the "We Sell Everything!" online store. It answers frequently asked questions, collects user requests, and directs them to the appropriate departments (programmers or sales).
