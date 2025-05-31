@@ -1,2 +1,2 @@
 # 2. Токен бота (ВНИМАНИЕ: НЕ ЗАГРУЖАЙТЕ ЭТОТ КОД С ТОКЕНОМ В ОТКРЫТЫЙ РЕПОЗИТОРИЙ!)
-TELEGRAM_TOKEN = "7872040280:AAFTBKc3w9QqufljTRD03OrAcHLPUk7OHrw"  # Замените на свой токен
+TELEGRAM_TOKEN = "your telegram token"  # Замените на свой токен
