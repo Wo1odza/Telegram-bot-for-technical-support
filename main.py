@@ -12,9 +12,8 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-
 # 3. База данных (SQLite in-memory)
-DATABASE_NAME = ":memory:"  # Use in-memory database
+DATABASE_NAME = "faq.db"  # Use a database file
 conn = sqlite3.connect(DATABASE_NAME, check_same_thread=False) # Disable thread checking
 cursor = conn.cursor()
 
@@ -29,8 +28,37 @@ CREATE TABLE IF NOT EXISTS support_requests (
     timestamp TEXT
 )
 """)
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS faq (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    question TEXT UNIQUE,
+    answer TEXT
+)
+""")
 conn.commit()
 
+# 4. Часто задаваемые вопросы (FAQ) - ЗАМЕНИТЬ НА СВОИ!
+FAQ = {
+    "Как оформить заказ?": "Для оформления заказа, пожалуйста, выберите интересующий вас товар и нажмите кнопку 'Добавить в корзину', затем перейдите в корзину и следуйте инструкциям для завершения покупки.",
+    "Как узнать статус моего заказа?": "Вы можете узнать статус вашего заказа, войдя в свой аккаунт на нашем сайте и перейдя в раздел 'Мои заказы'. Там будет указан текущий статус вашего заказа.",
+    "Как отменить заказ?": "Если вы хотите отменить заказ, пожалуйста, свяжитесь с нашей службой поддержки как можно скорее. Мы постараемся помочь вам с отменой заказа до его отправки.",
+    "Что делать, если товар пришел поврежденным?": "При получении поврежденного товара, пожалуйста, сразу свяжитесь с нашей службой поддержки и предоставьте фотографии повреждений. Мы поможем вам с обменом или возвратом товара.",
+    "Как связаться с вашей технической поддержкой?": "Вы можете связаться с нашей технической поддержкой через телефон на нашем сайте или написать нам в чат-бота.",
+    "Как узнать информацию о доставке?": "Информацию о доставке вы можете найти на странице оформления заказа на нашем сайте. Там указаны доступные способы доставки и сроки."
+}
+
+# Заполняем таблицу FAQ данными из словаря
+for question, answer in FAQ.items():
+    try:
+        cursor.execute("INSERT INTO faq (question, answer) VALUES (?, ?)", (question, answer))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        print(f"Вопрос '{question}' уже есть в базе данных.")
+
+# del FAQ  # Удаляем словарь FAQ после переноса данных
+# Или закомментировать:
+# FAQ = {}
 
 # 4. Часто задаваемые вопросы (FAQ) - ЗАМЕНИТЬ НА СВОИ!
 FAQ = {
@@ -62,10 +90,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     question = update.message.text
-    if question in FAQ:
-        await update.message.reply_text(FAQ[question])
+    cursor.execute("SELECT answer FROM faq WHERE question = ?", (question,))
+    result = cursor.fetchone()
+    if result:
+        answer = result[0]
+        await update.message.reply_text(answer)
     else:
         await update.message.reply_text("К сожалению, я не знаю ответа на этот вопрос. Попробуйте связаться со специалистом.")
+
 
 async def contact_specialist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [["Программисты", "Отдел продаж"]]
@@ -84,6 +116,19 @@ async def get_department(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return GET_REQUEST
 
 async def get_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Проверяем, существует ли таблица support_requests, и создаем, если нет
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS support_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        username TEXT,
+        request_text TEXT,
+        department TEXT,
+        timestamp TEXT
+    )
+    """)
+    conn.commit() # Важно выполнить commit после создания таблицы
+
     request_text = update.message.text
     department = context.user_data['department']
 
