@@ -35,11 +35,11 @@ The bot offers the following features:
 3.  **Configure the bot token:**
 
     *   **WARNING:** Do not store the bot token in a public repository! The best practice is to use environment variables. This example stores the token directly in the code, which is **STRONGLY DISCOURAGED** for production environments.
-    *   Open the `main.py` file and find the line:
+    *   Open the `config.py` file and find the line:
         ```python
-        TELEGRAM_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"  # Replace with your token
+        TELEGRAM_TOKEN = "your telegram token"  # Replace with your token
         ```
-    *   Replace `"YOUR_TELEGRAM_BOT_TOKEN"` with the token you received from BotFather in Telegram.
+    *   Replace `your telegram token` with the token you received from BotFather in Telegram.
 
 ## Running the Bot
 
